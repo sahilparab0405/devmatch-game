@@ -5,7 +5,7 @@ Sharpen your focus, test your speed, and enjoy smooth animations — all in one 
 
 ---
 
-## ## 🚀 Frontend & UI/UX Highlights
+## 🚀 Frontend & UI/UX Highlights
 
 - 🎨 **Frontend Development**
   - Clean, semantic HTML structure

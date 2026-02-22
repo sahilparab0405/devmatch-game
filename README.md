@@ -5,13 +5,18 @@ Sharpen your focus, test your speed, and enjoy smooth animations — all in one 
 
 ---
 
-## 🚀 Features
-- Flip cards with smooth animations
-- Track moves and time
-- Win detection with celebratory message
-- Difficulty selector for replayability
-- Clean UI with responsive design
+## ## 🚀 Frontend & UI/UX Highlights
 
+- 🎨 **Frontend Development**
+  - Clean, semantic HTML structure
+  - Modular CSS for responsive layout
+  - Vanilla JavaScript for game logic and interactivity
+
+- 🎯 **UI/UX Design**
+  - Intuitive card-flipping interaction
+  - Minimalist layout for focus and clarity
+  - Smooth animations for user delight
+  - Responsive design for all devices
 ---
 
 ## 🛠 Tech Stack

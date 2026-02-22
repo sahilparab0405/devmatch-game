@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevMatch — Memory Match for Developers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #050812;
+      --surface: #0d1120;
+      --surface2: #141928;
+      --border: rgba(255,255,255,0.07);
+      --accent: #00e5ff;
+      --accent2: #7c3aed;
+      --accent3: #f97316;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --font: 'Space Grotesk', sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    /* ── CANVAS BACKGROUND ── */
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── LAYOUT ── */
+    .scene {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── LANDING PANEL ── */
+    .landing {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      text-align: center;
+      animation: fadeUp 0.9s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Logo */
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .logo-icon {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono);
+      font-size: 22px; font-weight: 700;
+      color: #fff;
+      box-shadow: 0 0 30px rgba(0,229,255,0.25);
+      flex-shrink: 0;
+    }
+
+    .logo-name {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+
+    .logo-name em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    /* Tagline */
+    .tagline {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 48px;
+    }
+
+    /* Auth Card */
+    .auth-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px 44px;
+      width: 400px;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,229,255,0.05);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .auth-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.6;
+    }
+
+    /* Tabs */
+    .auth-tabs {
+      display: flex;
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 28px;
+      border: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 9px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: var(--accent2);
+      color: #fff;
+      box-shadow: 0 2px 12px rgba(124,58,237,0.4);
+    }
+
+    /* Form */
+    .auth-form { display: flex; flex-direction: column; gap: 14px; }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .field input:focus {
+      border-color: rgba(0,229,255,0.4);
+      box-shadow: 0 0 0 3px rgba(0,229,255,0.07);
+    }
+
+    .field input::placeholder { color: var(--muted); opacity: 0.5; }
+
+    /* Guest play option */
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 12px; color: var(--muted);
+      margin: 4px 0;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1;
+      height: 1px; background: var(--border);
+    }
+
+    /* Buttons */
+    .btn-primary {
+      padding: 13px;
+      background: linear-gradient(135deg, var(--accent2), #5b21b6);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-family: var(--font);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 16px rgba(124,58,237,0.35);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(124,58,237,0.45);
+    }
+
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-ghost {
+      padding: 11px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-ghost:hover {
+      border-color: rgba(0,229,255,0.3);
+      color: var(--accent);
+    }
+
+    /* Hidden panel */
+    .signup-fields { display: none; }
+    .signup-fields.show { display: contents; }
+
+    /* ── AUTH → GAME TRANSITION ── */
+    .scene.exit {
+      animation: sceneExit 0.6s cubic-bezier(0.4,0,1,1) forwards;
+    }
+
+    @keyframes sceneExit {
+      to { opacity: 0; transform: scale(1.04); }
+    }
+
+    /* floating tech tags */
+    .floating-tags {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .ftag {
+      position: absolute;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--accent);
+      opacity: 0;
+      padding: 4px 10px;
+      border: 1px solid rgba(0,229,255,0.15);
+      border-radius: 20px;
+      background: rgba(0,229,255,0.04);
+      animation: floatUp var(--dur) var(--delay) linear infinite;
+      white-space: nowrap;
+    }
+
+    @keyframes floatUp {
+      0%   { opacity: 0; transform: translateY(0) translateX(var(--wobble)); }
+      10%  { opacity: 0.5; }
+      90%  { opacity: 0.5; }
+      100% { opacity: 0; transform: translateY(-110vh) translateX(calc(var(--wobble) * -1)); }
+    }
+
+    /* Error shake */
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%,60% { transform: translateX(-6px); }
+      40%,80% { transform: translateX(6px); }
+    }
+    .shake { animation: shake 0.4s ease; }
+  </style>
+</head>
+<body>
+
+<!-- Animated background canvas -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- Floating tech tags -->
+<div class="floating-tags" id="floatingTags"></div>
+
+<div class="scene" id="scene">
+  <div class="landing">
+
+    <div class="logo-wrap">
+      <div class="logo-icon">{}</div>
+      <div class="logo-name">Dev<em>Match</em></div>
+    </div>
+
+    <p class="tagline">// memory · speed · code</p>
+
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="tab-btn active" id="tabLogin" onclick="switchTab('login')">Login</button>
+        <button class="tab-btn" id="tabSignup" onclick="switchTab('signup')">Sign Up</button>
+      </div>
+
+      <form class="auth-form" id="authForm" onsubmit="handleSubmit(event)">
+
+        <div class="signup-fields" id="signupExtras">
+          <div class="field">
+            <label>Username</label>
+            <input type="text" id="username" placeholder="dev_wizard" autocomplete="username" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="email" placeholder="you@example.com" autocomplete="email" required />
+        </div>
+
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" required />
+        </div>
+
+        <button type="submit" class="btn-primary" id="submitBtn">Login & Play →</button>
+
+        <div class="divider">or</div>
+
+        <button type="button" class="btn-ghost" onclick="playAsGuest()">Play as Guest</button>
+
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ── Floating tech tags ──
+  const TAGS = ['HTML','CSS','JS','React','Git','Docker','API','TypeScript','Node','Python','Vue','GraphQL','Redis','MongoDB','AWS','Linux','Angular','Next.js','CI/CD','WebGL'];
+  const tagsEl = document.getElementById('floatingTags');
+  TAGS.forEach((tag, i) => {
+    const el = document.createElement('span');
+    el.className = 'ftag';
+    el.textContent = tag;
+    el.style.cssText = `
+      left: ${5 + Math.random() * 90}%;
+      bottom: -40px;
+      --dur: ${12 + Math.random() * 14}s;
+      --delay: ${-Math.random() * 20}s;
+      --wobble: ${(Math.random() - 0.5) * 80}px;
+    `;
+    tagsEl.appendChild(el);
+  });
+
+  // ── Canvas background: grid + glow nodes ──
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, nodes = [];
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    nodes = Array.from({length: 50}, () => ({
+      x: Math.random() * W, y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
+      r: 1 + Math.random() * 2
+    }));
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Grid
+    ctx.strokeStyle = 'rgba(255,255,255,0.025)';
+    ctx.lineWidth = 1;
+    const gs = 60;
+    for (let x = 0; x < W; x += gs) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+    for (let y = 0; y < H; y += gs) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+
+    // Center glow
+    const cx = W / 2, cy = H / 2;
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * 0.55);
+    grad.addColorStop(0, 'rgba(124,58,237,0.08)');
+    grad.addColorStop(0.5, 'rgba(0,229,255,0.04)');
+    grad.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    // Nodes
+    nodes.forEach(n => {
+      n.x = (n.x + n.vx + W) % W;
+      n.y = (n.y + n.vy + H) % H;
+    });
+
+    // Connections
+    ctx.lineWidth = 0.6;
+    nodes.forEach((a, i) => {
+      nodes.slice(i + 1).forEach(b => {
+        const d = Math.hypot(a.x - b.x, a.y - b.y);
+        if (d < 120) {
+          ctx.strokeStyle = `rgba(0,229,255,${0.12 * (1 - d / 120)})`;
+          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+        }
+      });
+    });
+
+    nodes.forEach(n => {
+      const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r * 3);
+      g.addColorStop(0, 'rgba(0,229,255,0.7)');
+      g.addColorStop(1, 'transparent');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(n.x, n.y, n.r * 3, 0, Math.PI * 2); ctx.fill();
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  draw();
+
+  // ── Auth logic ──
+  let activeTab = 'login';
+
+  function switchTab(tab) {
+    activeTab = tab;
+    document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+    document.getElementById('tabSignup').classList.toggle('active', tab === 'signup');
+    const extras = document.getElementById('signupExtras');
+    extras.classList.toggle('show', tab === 'signup');
+    document.getElementById('submitBtn').textContent = tab === 'login' ? 'Login & Play →' : 'Create Account →';
+    document.getElementById('password').autocomplete = tab === 'login' ? 'current-password' : 'new-password';
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const pass = document.getElementById('password').value;
+
+    if (!email || !pass) {
+      document.getElementById('authForm').classList.add('shake');
+      setTimeout(() => document.getElementById('authForm').classList.remove('shake'), 400);
+      return;
+    }
+
+    const name = activeTab === 'signup'
+      ? (document.getElementById('username').value.trim() || email.split('@')[0])
+      : email.split('@')[0];
+
+    launchGame(name);
+  }
+
+  function playAsGuest() {
+    launchGame('Guest');
+  }
+
+  function launchGame(playerName) {
+    sessionStorage.setItem('devmatch_player', playerName);
+    const scene = document.getElementById('scene');
+    scene.classList.add('exit');
+    setTimeout(() => {
+      window.location.href = 'game.html';
+    }, 600);
+  }
+</script>
+</body>
+</html>
